@@ -127,7 +127,17 @@ if [ -d $ORACLE_BASE/oradata/$ORACLE_SID ]; then
    
   # Start database
   ${ORACLE_CMD} start
-  
+
+  for f in /docker-entrypoint-initdb.d/*; do
+      [ -f "$f" ] || continue
+      case "$f" in
+        *.sh)     echo "$0: running $f"; . "$f" ;;
+        *.sql)    echo "$0: running $f"; echo "exit" | /opt/oracle/product/18c/dbhomeXE/bin/sqlplus "SYS/oracle" AS SYSDBA @"$f"; echo ;;
+        *)        echo "$0: ignoring $f" ;;
+      esac
+      echo
+    done
+
 else
   echo Database does not exists, configuring
  
